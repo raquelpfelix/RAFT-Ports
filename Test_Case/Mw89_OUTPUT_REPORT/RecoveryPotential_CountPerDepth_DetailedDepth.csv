@@ -1,0 +1,11 @@
+Depth,RecoveryPotential_0to0p5mos,RecoveryPotential_0p5to1mos,RecoveryPotential_1to1p5mos,RecoveryPotential_1p5to2mos,RecoveryPotential_2to2p5mos,RecoveryPotential_2p5to3mos,RecoveryPotential_3to3p5mos,RecoveryPotential_3p5to4mos,RecoveryPotential_4to4p5mos,RecoveryPotential_4p5to5mos,RecoveryPotential_5to5p5mos,RecoveryPotential_5p5to6mos,RecoveryPotential_6to6p5mos,RecoveryPotential_6p5to7mos,RecoveryPotential_7to7p5mos,RecoveryPotential_7p5to8mos,RecoveryPotential_8to8p5mos,RecoveryPotential_8p5to9mos,RecoveryPotential_9to9p5mos,RecoveryPotential_9p5to10mos
+0-1 m,0,0,0,0,0,0,0,0,0,0,64,64,64,64,64,64,64,64,64,64
+1-2 m,0,0,0,0,0,0,0,0,0,0,219,219,219,219,219,219,219,219,219,219
+2-3 m,0,0,0,0,0,0,0,0,0,0,135,135,135,135,135,135,135,135,135,135
+3-4 m,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+4-5 m,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+5-6 m,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+6-7 m,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+7-8 m,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+8-9 m,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+9-10 m,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
