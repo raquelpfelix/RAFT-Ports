@@ -12,8 +12,7 @@ See the LICENSE file for details.
 
 ## Citation
 Please cite this paper when you use the application:
-Felix R., Chua C.T., Suppasri A., Pranantyo I. R., Gunawan, E. and Heidarzadeh M. (2026). RAFT-Ports: An Application for Risk Assessment for Tsunamis in Ports Demonstrated at Tanjung Gerem Port, Indonesia.
-Geoscience Letters. https://doi.org/10.1186/s40562-026-00522-w
+Felix, R., Chua, C.T., Suppasri, A. et al. RAFT-ports: an application for risk assessment for tsunamis in ports demonstrated at Tanjung Gerem Port, Indonesia. Geosci. Lett. 13, 74 (2026). https://doi.org/10.1186/s40562-026-00522-w
 
 ## Disclaimer
 The results produced by RAFT-Ports are dependent on the quality of the input data. In particular, uncertainties in inundation-depth datasets, building-footprint data, and the classification of industry types may influence the accuracy of the assessment. Users are encouraged to review and verify all input datasets and the analysis results.
