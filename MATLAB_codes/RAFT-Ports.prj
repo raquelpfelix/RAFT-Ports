@@ -1,0 +1,83 @@
+<deployment-project plugin="plugin.apptool" plugin-version="1.0">
+  <configuration build-checksum="3072135468" file="C:\Users\rf761\OneDrive - University of Bath\Research\MATLAB_App_2026\0_For_Release_RAFT-Ports_Refactored\RAFT-Ports.prj" location="C:\Users\rf761\OneDrive - University of Bath\Research\MATLAB_App_2026\0_For_Release_RAFT-Ports_Refactored" name="RAFT-Ports" target="target.mlapps" target-name="Package App">
+    <param.appname>RAFT-Ports</param.appname>
+    <param.authnamewatermark>Raquel FELIX</param.authnamewatermark>
+    <param.email />
+    <param.company />
+    <param.icon>${PROJECT_ROOT}\RAFT-Ports_resources\icon_24.png</param.icon>
+    <param.icons>
+      <file>${PROJECT_ROOT}\RAFT-Ports_resources\icon_48.png</file>
+      <file>${PROJECT_ROOT}\RAFT-Ports_resources\icon_24.png</file>
+      <file>${PROJECT_ROOT}\RAFT-Ports_resources\icon_16.png</file>
+    </param.icons>
+    <param.summary>Risk Assessment For Tsunamis in Ports</param.summary>
+    <param.description>RAFT-Ports is an open-source application that applies fragility and vulnerability functions developed for port structures to estimate (1) structural-damage exceedance probabilities, (2) expected physical loss, and (3) production-capacity recovery probabilities for specified tsunami scenarios.
+
+Copyright 2026 Raquel Felix
+Licensed under Apache License 2.0
+For details: see LICENSE file in https://github.com/raquelpfelix/RAFT-Ports/
+
+Please cite the following paper when using the application:
+Felix, R., Chua, C. T., Suppasri, A., Pranantyo, I. R., Gunawan, E., &amp; Heidarzadeh, M. (2026). RAFT-ports: An application for risk assessment for tsunamis in ports demonstrated at Tanjung Gerem Port, Indonesia. Geoscience Letters, 13(1), 74. https://doi.org/10.1186/s40562-026-00522-w</param.description>
+    <param.screenshot>C:\Users\rf761\AppData\Local\Temp\tp8414d44f_af84_425d_84ab_53bc73e330f0.png</param.screenshot>
+    <param.version>1.0</param.version>
+    <param.products.name />
+    <param.products.id />
+    <param.products.version />
+    <param.platforms />
+    <param.output>${PROJECT_ROOT}</param.output>
+    <param.guid>941450e7-79f9-434d-97e3-19d28a6ad3e6</param.guid>
+    <unset>
+      <param.email />
+      <param.company />
+      <param.version />
+      <param.products.name />
+      <param.products.id />
+      <param.products.version />
+      <param.platforms />
+      <param.output />
+    </unset>
+    <fileset.main>
+      <file>${PROJECT_ROOT}\RAFT_Ports.mlapp</file>
+    </fileset.main>
+    <fileset.depfun>
+      <file>C:\Users\rf761\OneDrive - University of Bath\Documents\28790\colorspace\colorspace.m</file>
+      <file>C:\Users\rf761\OneDrive - University of Bath\Documents\MATLAB\cbrewer2\cbrewer2.m</file>
+      <file>C:\Users\rf761\OneDrive - University of Bath\Documents\MATLAB\cbrewer2\colorbrewer.mat</file>
+      <file>C:\Users\rf761\OneDrive - University of Bath\Documents\MATLAB\cbrewer2\requireFEXpackage.m</file>
+    </fileset.depfun>
+    <fileset.resources>
+      <file>${PROJECT_ROOT}\analysis</file>
+      <file>${PROJECT_ROOT}\logo_RAFT-Ports.png</file>
+      <file>${PROJECT_ROOT}\pipeline</file>
+      <file>${PROJECT_ROOT}\plotting</file>
+      <file>${PROJECT_ROOT}\RAFT-Ports_resources</file>
+      <file>${PROJECT_ROOT}\startup</file>
+      <file>${PROJECT_ROOT}\utils</file>
+    </fileset.resources>
+    <fileset.package />
+    <build-deliverables>
+      <file location="C:\Users\rf761\OneDrive - University of Bath\Research\MATLAB_App_2026" name="0_For_Release_RAFT-Ports_Refactored" optional="false">C:\Users\rf761\OneDrive - University of Bath\Research\MATLAB_App_2026\0_For_Release_RAFT-Ports_Refactored</file>
+    </build-deliverables>
+    <workflow />
+    <matlab>
+      <root>C:\Program Files\MATLAB\R2024b</root>
+      <toolboxes />
+    </matlab>
+    <platform>
+      <unix>false</unix>
+      <mac>false</mac>
+      <windows>true</windows>
+      <win2k>false</win2k>
+      <winxp>false</winxp>
+      <vista>false</vista>
+      <linux>false</linux>
+      <solaris>false</solaris>
+      <osver>10.0</osver>
+      <os32>false</os32>
+      <os64>true</os64>
+      <arch>win64</arch>
+      <matlab>true</matlab>
+    </platform>
+  </configuration>
+</deployment-project>

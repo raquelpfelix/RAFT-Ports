@@ -1,0 +1,112 @@
+% RAFT-Ports
+% Copyright 2026 Raquel Felix
+%
+% Licensed under the Apache License, Version 2.0.
+% For details: see LICENSE file in https://github.com/raquelpfelix/RAFT-Ports/
+%
+% Unless required by applicable law or agreed to in writing, this
+% software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
+% OR CONDITIONS OF ANY KIND.
+
+function createAllMaps(app)
+
+data = app.PolyData;
+
+if isempty(data)
+    uialert(app.RAFTPortsUIFigure, ...
+        'Run full analysis first.',sele 'Missing Results');
+    return;
+end
+
+config = setupMapConfig(app);
+
+mapList = {'Inundation','LossRatio','Damage','Recovery'};
+
+for t = 1:numel(mapList)
+
+    mapType = mapList{t};
+
+    %  skip disabled maps
+    if strcmp(mapType,'LossRatio') && ...
+            ~app.LossRatioRepairReplacementCheckBox.Value
+        continue;
+    end
+
+    if strcmp(mapType,'Damage') && ...
+            ~app.StructuralDamageStateCheckBox.Value
+        continue;
+    end
+
+    if strcmp(mapType,'Recovery') && ...
+            ~app.RecoveryPotentialofProductionCapacityCheckBox.Value
+        continue;
+    end
+
+    %  setup loop
+    [loopItems, loopItemsDisplay, mode, stateMap] = ...
+        setupMapMode(mapType);
+
+    for i = 1:numel(loopItems)
+
+        %%  CREATE FIGURE + AXES (SAFE )
+        fig = figure('Name', ['Map: ', loopItems{i}],'Color','w','Tag','AutoCloseFigure');
+
+        ax = axes('Parent',fig);   %  EXPLICIT PARENT (important)
+        hold(ax,'on');
+
+        %%  DRAW RASTER + LAND
+        drawRasterAndLand(ax, app, config);
+
+        %%  DRAW STRUCTURES
+        [legendHandles, legendLabels] = plotStructures( ...
+            ax, data, mode, loopItems{i}, config, mapType);
+
+        %%  FORMAT AXES (SAFE CHECK )
+        if isgraphics(ax,'axes')
+            %applyMapFormatting(ax, ...
+            %   config.FigureTextSize, config.FigureWidth);
+            applyMapFormatting(ax, ...
+                config.FigureTextSize, ...
+                config.FigureWidth, ...
+                app);
+        end
+
+        %%  ADD LEGEND (ENSURE AFTER PLOTTING )
+        if ~strcmp(mapType,'Inundation')
+            if ~isempty(legendHandles) && isgraphics(ax,'axes')
+
+                lgd = legend(ax, legendHandles, legendLabels, ...
+                    'Orientation','horizontal', ...
+                    'Location','southoutside', ...
+                    'Box','off');
+
+                lgd.FontSize = config.FigureTextSize;
+
+                if strcmp(mapType,'LossRatio')
+                    lgd.Title.String = 'Expected Loss Ratio';
+                else
+                    lgd.Title.String = 'Structure Probability of Exceedance';
+                end
+                lgd.ItemTokenSize = [10 10];
+            end
+        end
+
+        %%  TITLE (RESTORED )
+        if iscell(loopItemsDisplay{i})
+            titleText = [loopItemsDisplay{i}(:); {''}];
+        else
+            titleText = {loopItemsDisplay{i}; ''};
+        end
+
+        title(ax, titleText, 'FontSize', config.FigureTextSize + 2);
+
+        %%  EXPORT FIGURE
+        exportMapFigure(fig, app, mode, loopItems, stateMap, i, config);
+
+        %%  CLEANUP
+        hold(ax,'off');
+
+    end
+end
+
+end

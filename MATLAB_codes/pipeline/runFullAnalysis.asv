@@ -1,0 +1,171 @@
+function results = runFullAnalysis(inputs)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ✅ FULL ANALYSIS PIPELINE (FINAL — FULLY STABLE ✅)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% ===========================================================
+%% ✅ STEP 0 — VALIDATION
+%% ===========================================================
+if isempty(inputs.PolyData) || ~isstruct(inputs.PolyData)
+    error('PolyData input is empty or invalid.');
+end
+
+PD = inputs.PolyData;
+
+%% ===========================================================
+%% ✅ STEP 1 — VERIFY INUNDATION EXISTS
+%% ===========================================================
+if ~isfield(PD,'Inundation') || ~isfield(PD,'DepthGroup')
+    error('Inundation or DepthGroup not assigned.');
+end
+
+%% ===========================================================
+%% ✅ STEP 2 — INUNDATION COUNTS
+%% ===========================================================
+[InundationCount, InundationSummary, ~, ~, uniqueTypes] = ...
+    computeInundationCounts( ...
+        PD, inputs.typesMaster, ...
+        inputs.Depth_Ranges, ...
+        inputs.depthLabel, ...
+        inputs.outputFolder);
+
+if isempty(uniqueTypes)
+    error('No valid industry types found.');
+end
+
+%% ===========================================================
+%% ✅ STEP 3 — FIX TYPES (CRITICAL ✅)
+%% ===========================================================
+
+% ✅ filenames → cell
+if isstring(inputs.filenames)
+    filenamesCell = cellstr(inputs.filenames);
+else
+    filenamesCell = inputs.filenames;
+end
+
+% ✅ uniqueTypes → cell
+if isstring(uniqueTypes)
+    uniqueTypesCell = cellstr(uniqueTypes);
+else
+    uniqueTypesCell = uniqueTypes;
+end
+
+%% ===========================================================
+%% ✅ STEP 4 — ASSIGN STRUCTURAL DAMAGE
+%% ===========================================================
+PD = assignStructuralDamageProbabilities( ...
+    PD, inputs.tables.sdsTables, ...
+    filenamesCell, uniqueTypesCell, ...
+    inputs.outputFolder);
+
+%% ===========================================================
+%% ✅ STEP 5 — SDS SUMMARY
+%% ===========================================================
+[~, Summary_Table] = computeSDS_Summary( ...
+    PD, filenamesCell, ...
+    inputs.Depth_Ranges, ...
+    inputs.depthLabel, ...
+    inputs.threshold, ...
+    inputs.outputFolder);
+
+%% ===========================================================
+%% ✅ STEP 6 — SDS DETAILED
+%% ===========================================================
+Detailed_SDS = computeSDS_DetailedIndustry( ...
+    PD, uniqueTypesCell, inputs.damageStates, ...
+    filenamesCell, ...
+    inputs.Depth_Ranges, ...
+    inputs.depthLabel, ...
+    inputs.threshold, ...
+    inputs.outputFolder);
+
+%% ===========================================================
+%% ✅ STEP 7 — LOSS (OPTIONAL ✅)
+%% ===========================================================
+if isfield(inputs.tables,'Loss') && ~isempty(inputs.tables.Loss)
+
+    [PD, Loss_Table, Loss_Overview] = computeLossRatio( ...
+        PD, inputs.tables.Loss, ...
+        uniqueTypesCell, ...
+        inputs.Depth_Ranges, ...
+        inputs.threshold, ...
+        inputs.outputFolder);
+
+else
+    warning('Loss table missing — skipping.');
+
+    Loss_Table = table();
+    Loss_Overview = table();
+
+    for i = 1:numel(PD)
+        PD(i).LossRatio = NaN;
+    end
+end
+
+
+disp('Running STEP 7 — RECOVERY')
+%% ===========================================================
+%% ✅ STEP 8 — RECOVERY (OPTIONAL ✅)
+%% ===========================================================
+if isfield(inputs.tables,'Recovery') && ~isempty(inputs.tables.Recovery)
+
+    [PD, Detailed_Recovery, RecoveryOverview] = ...
+        computeRecoveryPotential( ...
+            PD, inputs.tables.Recovery, ...
+            inputs.tables.RecoveryCols, ...
+            inputs.threshold, ...
+            inputs.outputFolder);
+
+else
+    warning('Recovery table missing — skipping.');
+
+    Detailed_Recovery = table();
+    RecoveryOverview = table();
+end
+
+%% ===========================================================
+%% ✅ STEP 9 — FINAL SAFETY CHECKS
+%% ===========================================================
+
+% ✅ Ensure LossRatio exists
+if ~isfield(PD,'LossRatio')
+    for i = 1:numel(PD)
+        PD(i).LossRatio = NaN;
+    end
+end
+
+% ✅ Ensure DepthGroup exists
+for i = 1:numel(PD)
+    if ~isfield(PD(i),'DepthGroup')
+        PD(i).DepthGroup = 0;
+    end
+end
+
+%% ===========================================================
+%% ✅ STEP 10 — BUILD OUTPUT STRUCT
+%% ===========================================================
+results = struct();
+
+results.PolyData = PD;
+
+results.InundationCount   = InundationCount;
+results.InundationSummary = InundationSummary;
+
+results.SDS_Summary  = Summary_Table;
+results.SDS_Detailed = Detailed_SDS;
+
+results.Loss_Table    = Loss_Table;
+results.Loss_Overview = Loss_Overview;
+
+results.Recovery_Detailed = Detailed_Recovery;
+results.Recovery_Overview = RecoveryOverview;
+
+results.uniqueTypes = uniqueTypesCell;
+
+
+
+
+
+end

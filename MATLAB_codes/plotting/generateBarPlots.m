@@ -1,0 +1,588 @@
+% RAFT-Ports
+% Copyright 2026 Raquel Felix
+%
+% Licensed under the Apache License, Version 2.0.
+% For details: see LICENSE file in https://github.com/raquelpfelix/RAFT-Ports/
+%
+% Unless required by applicable law or agreed to in writing, this
+% software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
+% OR CONDITIONS OF ANY KIND.
+
+function generateBarPlots(app)
+
+close all
+
+FigureTextSize = 9;
+FigureWidth = 12;
+FigureResolution = app.FigureResolutiondpiEditField.Value;
+
+set(0,'DefaultFigureVisible','on');
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  COLORS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+pastelColors0 = [
+    235, 225, 150;
+    240, 110, 70;
+    150, 25, 25;
+    120, 0, 110
+    ] / 255;
+
+pastelColors = pastelColors0 * 0.95;
+
+colorsTypes2 = [
+    0.780, 0.620, 0.780;
+    0.992, 0.906, 0.145;
+    0.000, 0.620, 0.450;
+    0.900, 0.600, 0.000;
+    0.800, 0.475, 0.655;
+    0.000, 0.450, 0.700;
+    0.992, 0.635, 0.027;
+    0.200, 0.700, 0.700;
+    0.650, 0.650, 0.650;
+    1.000, 1.000, 1.000;
+    ];
+
+typesMaster = { ...
+    app.cargo_Edit.Value, ...
+    app.chemical_Edit.Value, ...
+    app.construction_Edit.Value, ...
+    app.energy_Edit.Value, ...
+    app.food_Edit.Value, ...
+    app.manufacturing_Edit.Value, ...
+    app.petrochemical_Edit.Value, ...
+    app.warehouse_Edit.Value, ...
+    app.transportation_Edit.Value, ...
+    'others'};
+
+TypeLegendColors = struct();
+
+for i = 1:numel(typesMaster)
+    TypeLegendColors.(char(typesMaster{i})) = colorsTypes2(i,:);
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  LEGEND
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    function applyLegend(ax, legendTitleText, isLossRatio)
+
+        lgd = legend(ax,'show','Location','southoutside','Box','off');
+        lgd.ItemTokenSize = [10,10];
+        lgd.Orientation = 'horizontal';
+
+        if isLossRatio
+            lgd.Title.String = {
+                sprintf('Count of structures with an expected loss ratio ≥ %.2f\n', ...
+                app.ProbabilityThreshold.Value), ...
+                legendTitleText};
+           
+        else
+            lgd.Title.String = {
+                sprintf('Count of Structures with Probability of Exceedance ≥ %.2f \n', ...
+                app.ProbabilityThreshold.Value), ...
+                legendTitleText};
+        end
+        lgd.Title.FontSize = FigureTextSize;
+    end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  RESIZE FUNCTION 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    function resizeFigure(fig)
+
+        set(fig,'Units','centimeters');
+
+        pos = get(fig,'Position');
+
+        width0  = pos(3);
+        height0 = pos(4);
+
+        if width0 == 0
+            aspectRatio = 1;
+        else
+            aspectRatio = height0 / width0;
+        end
+
+        newWidth  = FigureWidth;
+        newHeight = newWidth * aspectRatio;
+
+        set(fig,'DefaultAxesFontSize',FigureTextSize);
+        set(fig,'DefaultTextFontSize',FigureTextSize);
+        set(fig,'DefaultLegendFontSize',FigureTextSize);
+
+        set(fig,'Position',[10 5 newWidth newHeight]);
+
+        set(fig,'PaperPositionMode','auto');
+
+    end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  1. INUNDATION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+InundationCount = app.InundationCount;
+
+fig = figure('Name','Inundation','Color','white','Units','centimeters');
+ax = axes(fig); hold(ax,'on');
+
+yData = InundationCount{:,3:end};
+legendNames = InundationCount.Properties.VariableNames(3:end);
+
+b = bar(ax,yData,'stacked');
+
+for i = 1:numel(b)
+
+    colName = legendNames{i};
+
+    lookupName = char(lower(string(colName)));
+    displayName = char(string(colName));
+
+    b(i).DisplayName = displayName;
+
+    if isfield(TypeLegendColors, lookupName)
+        b(i).FaceColor = TypeLegendColors.(lookupName);
+    else
+        b(i).FaceColor = [0.5 0.5 0.5];
+    end
+
+end
+
+ax.XTick = 1:height(InundationCount);
+ax.XTickLabel = cellstr(InundationCount.(app.Depth_Edit.Value));
+
+xlabel(ax,'Inundation Depth (m)');
+ylabel(ax,'Count of Structures');
+
+grid(ax,'on');
+
+lgd = legend(ax,'show','Location','southoutside','Box','off');
+lgd.ItemTokenSize = [10,10];
+lgd.Orientation = 'horizontal';
+lgd.Title.String = 'Industry Types';
+lgd.Title.FontSize = FigureTextSize;
+
+title(ax, sprintf('%s \n','Inundated Structures'), 'FontSize', FigureTextSize+2);
+resizeFigure(fig);
+
+exportgraphics(fig,...
+    fullfile(app.FullDirectory,'BarPlot_inundation.png'),...
+    'Resolution',FigureResolution);
+
+hold(ax,'off');
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 2. STRUCTURAL DAMAGE SUMMARY
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if app.StructuralDamageStateCheckBox.Value
+
+    T = app.Summary_ProbExc_Table;
+
+    fig = figure('Units','centimeters','Color','white');
+    ax = axes(fig); hold(ax,'on');
+
+    baseX = 1:height(T);
+
+    for s = 2:5
+        xPos = baseX + (s-2)*0.8;
+
+        bar(ax,xPos,T{:,s},...
+            'FaceColor',pastelColors(s-1,:), ...
+            'EdgeColor','k','BarWidth',0.4,...
+            'DisplayName',T.Properties.VariableNames{s});
+    end
+
+        Y = T{:,2:5};
+    
+    validStates = any(Y > 0,1);
+    
+    nStates = sum(validStates);
+    
+    if nStates <= 1
+        ax.XTick = baseX;
+    else
+        ax.XTick = baseX + 0.8;
+    end
+        ax.XTickLabel = cellstr(string(T{:,1}));
+
+    mx = max(T{:,2:5},[],'all');
+    if ~isfinite(mx) || mx == 0
+        mx = 1;
+    end
+
+    ylim(ax,[0 mx*1.1])
+    xlim(ax,[0.5 10.5])
+
+    xlabel(ax,'Inundation Depth (m)');
+    ylabel(ax,'Count of Structures');
+
+    grid(ax,'on');
+
+    applyLegend(ax,'Damage State',false);
+
+    resizeFigure(fig);
+    title(ax, sprintf('%s \n','Structural Damage State Summary'), 'FontSize', FigureTextSize+2);
+
+    exportgraphics(fig,...
+        fullfile(app.FullDirectory,'BarPlot_StructuralDamageState.png'),...
+        'Resolution',FigureResolution);
+
+    hold(ax,'off');
+
+
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  3. PER DAMAGE STATE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+damageStates = {'minor','moderate','major','destroyed'};
+
+for s = 1:numel(damageStates)
+
+    filePath = fullfile(app.FullDirectory,...
+        sprintf('StructDamageState_%s_CountperDepth.csv',damageStates{s}));
+
+    if ~isfile(filePath)
+        continue;
+    end
+
+    T = readtable(filePath);
+
+    colNames = T.Properties.VariableNames(3:end);
+
+    allValues = T{:, colNames};
+
+    % FIX: only skip if truly invalid (NOT zeros)
+    if isempty(allValues) || all(~isfinite(allValues),'all')
+        continue;
+    end
+fig = figure('Units','centimeters','Color','white');
+ax = axes(fig);
+hold(ax,'on');
+
+baseX = 1:height(T);
+maxY = 0;
+
+for c = 1:numel(colNames)
+
+    y = T{:,colNames{c}};
+
+    % FIX: allow zero data
+    if isempty(y) || all(~isfinite(y))
+        continue;
+    end
+
+    x = baseX + (c-1)*0.1;
+
+    maxY = max(maxY, max(y));
+
+    rawName = string(colNames{c});
+
+    % CLEAN NAME
+    cleanName = erase(lower(rawName), ...
+        ["_minor","_moderate","_major","_destroyed"]);
+
+    lookupName = char(cleanName);
+
+    displayName = char(cleanName);
+    displayName = [upper(displayName(1)), displayName(2:end)];
+
+    % COLOR (YOUR ORIGINAL LOGIC)
+    if isfield(TypeLegendColors, lookupName)
+        col = TypeLegendColors.(lookupName);
+    else
+        col = [0.5 0.5 0.5];
+    end
+
+    bar(ax,x,y,...
+        'FaceColor',col,...
+        'EdgeColor','k',...
+        'BarWidth',0.4,...
+        'DisplayName',displayName);
+
+end
+
+% SAFE ylim
+if maxY == 0
+    maxY = 1;
+end
+
+ylim(ax,[0 maxY*1.1])
+xlim(ax,[0.5 10.5])
+
+ax.XTick = baseX;
+ax.XTickLabel = cellstr(string(T{:,1}));
+
+xlabel(ax,'Inundation Depth (m)');
+ylabel(ax,'Count of Structures');
+
+grid(ax,'on');
+grid(ax,'minor');
+
+applyLegend(ax,'Industry Type',false);
+
+damageStatesTitle =  {
+    'Minor Structural Damage', ...
+    'Moderate Structural Damage', ...
+    'Major Structural Damage', ...
+    'Completely Destroyed Structures'};
+
+title(ax, sprintf('%s \n',damageStatesTitle{s}), ...
+    'FontSize', FigureTextSize+2);
+
+resizeFigure(fig);
+
+exportgraphics(fig,...
+    fullfile(app.FullDirectory,...
+    sprintf('BarPlot_%s_TypeClassified.png',damageStates{s})),...
+    'Resolution',FigureResolution);
+
+hold(ax,'off');
+end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  3. LOSS RATIO 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if app.LossRatioRepairReplacementCheckBox.Value
+
+    T = app.Detailed_LossRatio_Table;
+
+    if ~(isempty(T) || width(T) < 3)
+
+        fig = figure('Units','centimeters','Color','white');
+        ax = axes(fig); hold(ax,'on');
+
+        colNames = T.Properties.VariableNames(3:end);
+        baseX = 1:height(T);
+
+        maxY = 0;
+
+        for a = 1:numel(colNames)
+
+            yValues = T.(colNames{a});
+
+            if isempty(yValues) || all(~isfinite(yValues))
+                continue;
+            end
+
+            maxY = max(maxY, max(yValues));
+
+            x = baseX + (a-1)*0.15;
+
+            lookupName = lower(colNames{a});
+
+            if isfield(TypeLegendColors, lookupName)
+                col = TypeLegendColors.(lookupName);
+            else
+                col = [0.5 0.5 0.5];
+            end
+
+            bar(ax,x,yValues,...
+                'FaceColor',col,...
+                'EdgeColor','k',...
+                'BarWidth',0.4,...
+                'DisplayName',colNames{a});
+        end
+
+        if maxY == 0
+            maxY = 1;
+        end
+
+        ylim(ax,[0 maxY*1.1])
+
+        ax.XTick = baseX;
+        ax.XTickLabel = cellstr(T.Depth);
+
+        xlabel(ax,'Inundation Depth (m)');
+        ylabel(ax,'Count of Structures');
+
+        grid(ax,'on');
+
+        applyLegend(ax,'Industry Type',true);
+        title(ax, sprintf('%s \n','Loss Ratio (Repair / Replacement)'), 'FontSize', FigureTextSize+2);
+        resizeFigure(fig);
+
+        exportgraphics(fig,...
+            fullfile(app.FullDirectory,'BarPlot_LossRatio.png'),...
+            'Resolution',FigureResolution);
+
+        hold(ax,'off');
+
+    end
+end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%% BAR PLOT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%% RECOVERY POTENTIAL TOTAL BY MONTH %%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if app.RecoveryPotentialofProductionCapacityCheckBox.Value
+
+    tbl = app.Detailed_Recovery;
+
+    varNames = tbl.Properties.VariableNames;
+
+    if numel(varNames) < 5
+        warning('Recovery plot skipped — missing depth divisions');
+    else
+
+        monthsVar = varNames{1}; %#ok<NASGU>
+        totalVar  = varNames{2}; %#ok<NASGU>
+        depthVars = varNames(3:5);
+
+        % Stacked data
+        Y = tbl{:, depthVars};
+
+        if size(Y,2) ~= 3
+            error('Expected exactly 3 depth division columns (got %d).', ...
+                size(Y,2));
+        end
+
+        % -------------------------------------------------------
+        % Create figure
+        % -------------------------------------------------------
+        hFig = figure( ...
+            'Name','Recovery Potential', ...
+            'Color','white', ...
+            'Units','centimeters', ...
+            'Visible','on');
+
+        ax = axes('Parent',hFig);
+        hold(ax,'on');
+
+        % -------------------------------------------------------
+        % Plot
+        % -------------------------------------------------------
+        b = bar(ax,Y,'stacked');
+
+        % -------------------------------------------------------
+        % ORIGINAL COLOURS
+        % -------------------------------------------------------
+        stackColors = [
+            0.48 0.24 0.40;   % muted plum purple
+            0.55 0.28 0.78;   % orchid purple
+            0.29 0.00 0.51    % deep royal purple
+            ];
+
+        for k = 1:min(3,numel(b))
+            b(k).FaceColor = stackColors(k,:);
+            b(k).EdgeColor = 'k';
+        end
+
+        % -------------------------------------------------------
+        % Axes formatting
+        % -------------------------------------------------------
+        grid(ax,'on');
+        % grid(ax,'minor');
+
+        xlabel(ax,...
+            'Months after the earthquake',...
+            'FontSize',FigureTextSize);
+
+        ylabel(ax,...
+            'Count of Structures',...
+            'FontSize',FigureTextSize);
+
+        title(ax,...
+            sprintf('Recovery Potential\n'),...
+            'FontSize',FigureTextSize+2);
+
+        % -------------------------------------------------------
+        % X-axis labels
+        % -------------------------------------------------------
+        if exist('Months_Ranges_categorical','var') ...
+                && ~isempty(Months_Ranges_categorical)
+
+            xVarNames = Months_Ranges_categorical;
+
+        else
+
+            xVarNames = strings(20,1);
+
+            for m = 1:20
+
+                if mod(m,2)==0
+
+                    startMonth = (m-1)*0.5;
+                    endMonth   = m*0.5;
+
+                    xVarNames(m) = sprintf( ...
+                        '(%.1f - %.1f]', ...
+                        startMonth, ...
+                        endMonth);
+
+                else
+
+                    xVarNames(m) = "";
+
+                end
+
+            end
+        end
+
+        ax.XTick = 1:20;
+        ax.XTickLabel = xVarNames;
+        ax.XTickLabelRotation = 35;
+        ax.FontSize = FigureTextSize;
+
+        % -------------------------------------------------------
+        % Legend
+        % -------------------------------------------------------
+        rawLabels = { ...
+            app.NoInundation_Edit.Value, ...
+            app.DepthLess_Edit.Value, ...
+            app.DepthMore_Edit.Value};
+
+        legLabels = strrep(string(rawLabels), "_", " ");
+
+        lgd = legend(ax,...
+            legLabels,...
+            'Location','southoutside',...
+            'Box','off');
+
+        lgd.Orientation = 'horizontal';
+        lgd.ItemTokenSize = [15 15];
+
+        lgd.Title.String = { ...
+            sprintf( ...
+        'Count of Structures with Probability of Exceedance ≥ %.2f \n', ...
+            app.ProbabilityThreshold.Value), ...
+            'Inundation depth at building (m)'};
+
+        %             'Probability of Exceedance Threshold: %.2f \n', ...
+        lgd.Title.FontSize = FigureTextSize;
+
+        % -------------------------------------------------------
+        % Y limits
+        % -------------------------------------------------------
+        yMax = max(sum(Y,2));
+
+        if isempty(yMax) || ~isfinite(yMax) || yMax == 0
+            yMax = 1;
+        end
+
+        ylim(ax,[0 yMax*1.10]);
+
+        % -------------------------------------------------------
+        % Resize using your helper
+        % -------------------------------------------------------
+        resizeFigure(hFig);
+
+        % -------------------------------------------------------
+        % Export
+        % -------------------------------------------------------
+        exportgraphics( ...
+            hFig, ...
+            fullfile(app.FullDirectory,...
+            'BarPlot_RecoveryPotential.png'), ...
+            'Resolution',FigureResolution);
+
+        hold(ax,'off');
+
+
+    end
+end
+pause(5)
+close all
+end
